@@ -9,3 +9,9 @@ fgGroupPoster.py:
 backend
 
 Update: 02/02/2020
+
+
+add Post_to_gr.py
+Auto post to gr, using graph API to get new post, selenium to comment.
+
+Update 21/03/2022
