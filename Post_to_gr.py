@@ -12,9 +12,9 @@ from time import sleep
 from selenium import webdriver
 from webdriver_manager.chrome import ChromeDriverManager
 
-groups_id = ['1259652814384252']
-token = "EAABwzLixnjYBABRrYd4U0cvZCeeZA2fI3gTn4X9ISvmwCzxK0wJ2UdnBW2kRkLUuPQZAbiFZCu3NoSXPoTPOplPZB6AZArP5KiL3DU4nsCxPjDyZCiIxga9kHJUWN0W2kMg343bdutoqMVMjc2Vm4v7kZCQvDqMVkNv8a5LUehdTebmGh0StPZAwl"
-message = "Liên hệ HTP camera lắp đặt trọn gói camera giá rẻ nhất thị trường"
+groups_id = ['1608400319378074'] #,'425147792032823','668413097194404']
+token = "EAABwzLixnjYBAASqQbaTXCeZAZCqGnCBUuwnZBtZAsi5x2M0RAQJrIZC4yxlOSPZA7GVdU52xcLW33CgrrUv3y014OOA5zahIcZCPRgY9MgNj4GbOhs44CGjN3StbmwdeynKEhzroZA1OF62xgpZBHfD4lC5cYMJz6rYsLZCMLsrU0f5Yw8ViF1uJd"
+message = "https://www.facebook.com/camera24hanoi/ chuyên lắp đặt camera, thiết bị thông minh. Liên hệ 0789753999. Chi tiết có tại hptcamera.com.vn"
  
 def threaded_function(post_id, mess):
     print(post_id)
@@ -25,9 +25,9 @@ def threaded_function(post_id, mess):
     driver = webdriver.Chrome(ChromeDriverManager().install())
     driver.get('https://www.facebook.com')
     email_element = driver.find_element_by_css_selector('input[name="email"]')
-    email_element.send_keys("kaisoul.yk")
+    email_element.send_keys("0989996815")
     pass_element = driver.find_element_by_css_selector('input[name="pass"]')
-    pass_element.send_keys("VoHai123")
+    pass_element.send_keys("Kh0ngbiet")
     driver.find_element_by_css_selector('button[name="login"]').click()
     time.sleep(8)
    
@@ -35,44 +35,46 @@ def threaded_function(post_id, mess):
     time.sleep(4)
     box_comment = driver.find_element_by_css_selector('div[role="textbox"]')
     box_comment.send_keys(mess)
-    #box_comment.send_keys(Keys.ENTER)
+    box_comment.send_keys(Keys.ENTER)
     time.sleep(8)
   
     sleep(1)
         
 class Group(object):
-    group_id = ''
     last_post_time = ''
-    graph = ''
+    id_latest_post = ''
     mess_to_post = 'Lien he: htpcamera, cam ket re nhat thi truong'
     def __init__(self, group_id, graph):
         self.group_id = group_id
         self.graph = graph
         
     def is_updated_post(self):
-        tmp_lastest = self.graph.get_object(self.group_id, fields='updated_time')
-        if tmp_lastest == self.last_post_time:
+        tmp_lastest_time = self.graph.get_object(self.group_id, fields='updated_time')
+        tmp_lastest_post = self.graph.get_object(self.group_id, fields='feed.limit(1)')['feed']['data'][0]['id']
+       
+        if tmp_lastest_post == self.id_latest_post:
             return False
-        
-        self.last_post_time = tmp_lastest
+        self.id_latest_post = tmp_lastest_post
         return True
-    def get_time_update(self):
-        return self.last_post_time
+
     def get_lastest_post(self):
-        tmp_lastest = self.graph.get_object(self.group_id, fields='feed.limit(1)')
-        id_latest_post = tmp_lastest['feed']['data'][0]['id']
-        return id_latest_post
+        return self.id_latest_post
 
 def main():
     graph = facebook.GraphAPI(token)
-    gr = Group(groups_id[0],graph)
+    graphs_list = []
     
-    if gr.is_updated_post():
-        print(gr.get_time_update())
-        post_id = gr.get_lastest_post()
-        #create new thread to post
-        thread = Thread(target = threaded_function, args = (post_id,message ))
-        thread.start()
-        thread.join()
+    for group in groups_id:
+        graphs_list.append(Group(group,graph))
+    while(True):
+        for gr in graphs_list:
+            if gr.is_updated_post():
+                print ("FOUND UPDATE!!!!!")
+                post_id = gr.get_lastest_post()
+                #create new thread to post
+                thread = Thread(target = threaded_function, args = (post_id,message ))
+                thread.start()
+                thread.join()
+        sleep (60)
 if __name__ == "__main__":
     main()
